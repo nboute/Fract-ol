@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/04 19:05:42 by nboute            #+#    #+#             */
-/*   Updated: 2017/04/24 19:47:15 by nboute           ###   ########.fr       */
+/*   Updated: 2017/04/26 15:40:13 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # define INT_MAX 2147483647
 # define INT_MIN -2147483648
 # define MAX_COLS 1000
+# define ABS(value) (value < 0) ? (-1 * value) : value
 
 # include "../libft/libft.h"
 # include <math.h>
@@ -70,6 +71,7 @@ typedef struct			s_mlx
 	short				itratio;
 	int					maxiter;
 	int					colstart;
+	int					colend;
 	int					colpre;
 	int					colrange;
 	int					moffset;

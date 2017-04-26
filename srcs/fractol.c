@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/28 17:48:29 by nboute            #+#    #+#             */
-/*   Updated: 2017/04/24 20:07:22 by nboute           ###   ########.fr       */
+/*   Updated: 2017/04/26 18:06:01 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,19 +57,19 @@ int			ft_gradation(unsigned int col, unsigned int col2, int p)
 	return (col + r * 65536 + g * 256 + b);
 }
 
-int			get_color(int val, int pre)
+int			get_color(int val, int val2, int pre, int perc)
 {
 	if (pre <= 1)
 		return (set_color(val));
 	return (ft_gradation(set_color((val / pre) % 10),
-				set_color(((val / pre) + 1) % 10), (val % pre) * (100 / pre)));
+				set_color(((val2 / pre)) % 10), perc));
 }
 
 void	mandelbrot(int i, int j, t_mlx *mlx)
 {
 	double	vals[5];
 	int		iter;
-	int		color;
+//	int		color;
 
 	vals[0] = ft_map(i, mlx->width, mlx->xmin, mlx->xmax);
 	vals[1] = ft_map(j, mlx->height, mlx->ymin, mlx->ymax);
@@ -83,11 +83,9 @@ void	mandelbrot(int i, int j, t_mlx *mlx)
 		vals[2] = vals[4];
 		iter++;
 	}
-	color = ((100 / mlx->colpre) * (iter % mlx->nbcols) +
-			mlx->colstart) % MAX_COLS;
-	if (color > 400)
-		printf("%d|%d|%d|%d|%d\n", color, iter, mlx->colpre, mlx->nbcols, mlx->colstart);
-	ft_place_pixel(mlx->colors[color], i, j, mlx->main);
+//	color = ((100 / mlx->colpre) * (iter % mlx->nbcols) +
+//			mlx->colstart) % MAX_COLS;
+	ft_place_pixel(mlx->colors[iter % mlx->nbcols], i, j, mlx->main);
 }
 
 int	draw_mandelbrot(t_mlx *mlx)
@@ -106,21 +104,52 @@ int	draw_mandelbrot(t_mlx *mlx)
 	return (0);
 }
 
-int		*set_color_values(t_mlx *mlx, int nb, int pre)
+int		*set_color_values(t_mlx *mlx)
 {
 	int	i;
-	int	max;
+	int	j;
+	int	k;
 
 	i = 0;
-	max = nb * pre;
+	k = 0;
+	mlx->nbcols = ABS(mlx->colend - mlx->colstart);
+	if (mlx->nbcols > 0 && mlx->nbcols < mlx->colpre)
+		k = mlx->nbcols;
+	else if (mlx->nbcols > mlx->colpre * 9 && mlx->nbcols < mlx->colpre * 10)
+		k = mlx->colpre * 10 - mlx->nbcols;
+	else if (mlx->nbcols >= mlx->colpre && mlx->nbcols <=  - mlx->colpre)
+		k = mlx->colpre;
 	if (mlx->colors)
 		free(mlx->colors);
-	if (!(mlx->colors = (int*)malloc(sizeof(int) * max)))
+	if (!(mlx->colors = (int*)malloc(sizeof(int) * (mlx->nbcols + k))))
 		return (0);
-	while (i < max)
+	printf("%d\n", k);
+	int	val1;
+	int val2;
+	int	perc;
+	perc = mlx->colstart % mlx->colpre;
+	while (i < mlx->nbcols)
 	{
-		mlx->colors[i] = get_color(i, pre);
+		val1 = (mlx->colstart + mlx->colpre * (i / mlx->colpre) - mlx->colstart % mlx->colpre) % (mlx->colpre * 10);
+		val2 = (val1 + mlx->colpre) % (mlx->colpre * 10);
+		perc = (perc + ft_imap(i % mlx->colpre, mlx->colpre, 0, 100)) % 100;
+//		perc = ft_map(i % mlx->colpre, mlx->colpre, 0, 100);
+		mlx->colors[i] = get_color(val1, val2, mlx->colpre, perc);
+//		mlx->colors[i] = get_color((mlx->colstart + 5 * (i / 50)) %
+//				(mlx->colpre * 10), (mlx->colstart + 50 * ((i % 50 + 1)))
+//				% (mlx->colpre * 10), mlx->colpre, (i % mlx->colpre));
+		printf("|val1:%d|val2:%d|pre:%d|perc:%d|col1:%d|%d\n", val1, val2, mlx->colpre, perc, mlx->colstart, i);
+		getchar();
 		i++;
+	}
+	mlx->nbcols += k;
+	i = 0;
+	j = 0;
+	while (j < k)
+	{
+		mlx->colors[i + j] = get_color((mlx->colstart + i), mlx->colend,
+				mlx->colpre, ft_map(j, k, 0, 100));
+		j++;
 	}
 	return (mlx->colors);
 }
@@ -216,10 +245,11 @@ int		main(void)
 		return (-1);
 	mlx->mlx = mlx_init();
 	mlx->colors = NULL;
-	mlx->colstart = 0;
-	mlx->colpre = 1;
-	mlx->nbcols = 5;
-	set_color_values(mlx, 10, 100);
+	mlx->colstart = 170;
+	mlx->colend = 643;
+	mlx->colpre = 25;
+	mlx->nbcols = 0;
+	set_color_values(mlx);
 	mlx->moffset = 200;
 	mlx->win = mlx_new_window(mlx->mlx, 1000 + mlx->moffset, 1000, "Fract'ol");
 	mlx->img = NULL;
