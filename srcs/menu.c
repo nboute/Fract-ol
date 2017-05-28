@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/04/22 17:22:30 by nboute            #+#    #+#             */
-/*   Updated: 2017/05/10 19:44:43 by nboute           ###   ########.fr       */
+/*   Updated: 2017/05/28 21:04:19 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,46 @@ void	get_palet(int **colors, int *nbcols)
 	vals[1] = 1000;
 	vals[2] = 100;
 	set_color_values(vals, nbcols, colors);
+}
+
+int		menu_action(int x, int y, t_mlx *mlx, int button)
+{
+	if (y >= 60)
+	{
+		if (button == 1)
+			mlx->colstart = ft_lmap(y - 60, 940, 0, 100);
+		if (button == 2)
+			mlx->colend = ft_lmap(y - 60, 940, 0, 100);
+		if (mlx->colstart == mlx->colend)
+			mlx->colend = (mlx->colstart + 1) % 100;
+		set_colors_p1(mlx);
+	}
+	if (x >= 0 && x < 30 && y >= 0 && y < 30)
+	{
+		if (mlx->mval == 1)
+			if (mlx->colpre < 100)
+				mlx->colpre++;
+		if (mlx->mval == 0)
+			if (mlx->maxiter < 1000)
+				mlx->maxiter++;
+	}
+	else if (x >= 0 && x < 30 && y >= 30 && y < 60)
+	{
+		if (mlx->mval == 1)
+			if (mlx->colpre > 1)
+				mlx->colpre--;
+		if (mlx->mval == 0)
+			if (mlx->maxiter > 10)
+				mlx->maxiter--;
+	}
+	else if (x >= 30 && y >= 0 && y < 30)
+		mlx->mval = 0;
+	else if (x >= 30 && y >= 30 && y < 60)
+		mlx->mval = 1;
+	if (mlx->mval == 1)
+		set_colors_p1(mlx);
+	printf("%d\n", mlx->mval);
+	return (0);
 }
 
 void	setup_menu(t_mlx *mlx)
@@ -101,6 +141,7 @@ void	draw_menu(t_mlx *mlx)
 	mlx_put_image_to_window(mlx->mlx, mlx->win, mlx->menu->img, 0, 0);
 	if (mlx->mval == 0)
 	{
+		ft_putchar('a');
 		mlx_string_put(mlx->mlx, mlx->win, 75, 5, 0x00FFFFFF, "ITER MAX");
 		mlx_string_put(mlx->mlx, mlx->win, 110 - (ft_nbdigits(mlx->maxiter) * 5)
 				/ 2, 35, WHITE, ft_itoa(mlx->maxiter));

@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/04 19:05:42 by nboute            #+#    #+#             */
-/*   Updated: 2017/05/10 19:12:52 by nboute           ###   ########.fr       */
+/*   Updated: 2017/05/28 20:42:40 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,5 +92,6 @@ void	draw_menu(t_mlx *mlx);
 int		*set_color_values(int vals[3], int *nbcols, int **colors);
 int		set_colors_p1(t_mlx *mlx);
 void	ft_place_pixel(int color, int x, int y, t_img *img);
+int		menu_action(int x, int y, t_mlx *mlx, int button);
 
 #endif

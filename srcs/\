@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/28 17:48:29 by nboute            #+#    #+#             */
-/*   Updated: 2017/05/28 21:13:11 by nboute           ###   ########.fr       */
+/*   Updated: 2017/05/28 20:29:33 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ int			set_color(int cp)
 		return (PURPLE);
 }
 
-int			set_colors_p1(t_mlx *mlx)
+int	set_colors_p1(t_mlx *mlx)
 {
 	int		vals[4];
 
@@ -60,9 +60,9 @@ int			set_colors_p1(t_mlx *mlx)
 
 int			ft_gradation(unsigned int col, unsigned int col2, int p)
 {
-	int		r;
-	int		g;
-	int		b;
+	int	r;
+	int	g;
+	int	b;
 
 	r = ((col2 >> 16) & 0x000000FF) - ((col >> 16) & 0x000000FF);
 	g = ((col2 >> 8) & 0x000000FF) - ((col >> 8) & 0x000000FF);
@@ -81,10 +81,11 @@ int			get_color(int val, int val2, int pre, int perc)
 				set_color(val2 / pre), perc));
 }
 
-void		mandelbrot(int i, int j, t_mlx *mlx)
+void	mandelbrot(int i, int j, t_mlx *mlx)
 {
 	double	vals[5];
 	int		iter;
+	//	int		color;
 
 	vals[0] = ft_dmap(i, mlx->width, mlx->xmin, mlx->xmax);
 	vals[1] = ft_dmap(j, mlx->height, mlx->ymin, mlx->ymax);
@@ -102,7 +103,7 @@ void		mandelbrot(int i, int j, t_mlx *mlx)
 			i, j, mlx->main);
 }
 
-void		burning_ship(int i, int j, t_mlx *mlx)
+void	burning_ship(int i, int j, t_mlx *mlx)
 {
 	double	vals[5];
 	int		iter;
@@ -123,15 +124,15 @@ void		burning_ship(int i, int j, t_mlx *mlx)
 		vals[2] = vals[4];
 		iter++;
 	}
-	ft_place_pixel(mlx->main->colors[(iter + mlx->index) % mlx->main->nbcols],
-			i, j, mlx->main);
+	//	color = ((100 / mlx->colpre) * (iter % mlx->nbcols) +
+	//			mlx->colstart) % MAX_COLS;
+	ft_place_pixel(mlx->main->colors[(iter + mlx->index) % mlx->main->nbcols], i, j, mlx->main);
 }
-int			draw_mandelbrot(t_mlx *mlx)
+int	draw_mandelbrot(t_mlx *mlx)
 {
-	int		i;
+	int	i = 0;
 	int		j;
 
-	i = 0;
 	while (i < mlx->width)
 	{
 		j = 0;
@@ -148,29 +149,12 @@ int			draw_mandelbrot(t_mlx *mlx)
  ** (on 0 to 1000 scale for start & end, referring to preselected color values)
  ** 3 = value for last shading loop
  */
-int			*set_color_values_p3(int vals[4], int *colors, int val)
+int		*set_color_values_p2(int vals[4], int *nbcols, int **colors)
 {
-	int		j;
-	double	perc;
-
-	j = 0;
-	while (j < vals[3])
-	{
-		perc = ft_dmap(j, vals[3], 0, 100);
-		if (perc > 100)
-			perc = 100;
-		colors[j] = ft_gradation(colors[-1], val, lround(perc));
-		j++;
-	}
-	return (colors);
-}
-
-int			*set_color_values_p2(int vals[4], int *nbcols, int **colors)
-{
-	int		i;
-	int		j;
-	int		tmp[2];
-	double	perc;
+	int	i;
+	int	j;
+	int	tmp[2];
+	double perc;
 
 	perc = ft_dmap(vals[0] % vals[2], vals[2], 0, 100);
 	i = 0;
@@ -191,7 +175,14 @@ int			*set_color_values_p2(int vals[4], int *nbcols, int **colors)
 	tmp[0] = get_color(vals[0] - (vals[0] % vals[2]),
 			(vals[0] + vals[2]) % ((vals[2] * 9) + 1),
 			vals[2], ft_lmap(vals[0] % vals[2], vals[2], 0, 100));
-	set_color_values_p3(vals, (*colors) + i, tmp[0]);
+	while (j < vals[3])
+	{
+		perc = ft_dmap(j, vals[3], 0, 100);
+		if (perc > 100)
+			perc = 100;
+		(*colors)[i + j] = ft_gradation((*colors)[i - 1], tmp[0], lround(perc));
+		j++;
+	}
 	return (*colors);
 }
 
@@ -213,8 +204,99 @@ int		*set_color_values(int vals[4], int *nbcols, int **colors)
 		return (0);
 	return (set_color_values_p2(vals, nbcols, colors));
 }
+/*
+   int		*set_color_values(int vals[3], int *nbcols, int **colors)
+   {
+   int	i;
+   int	j;
+   int	k;
 
+   i = 0;
+ *nbcols = labs(vals[1] - vals[0]);
+ k = 0;
+ if (*nbcols <= vals[2])
+ k = *nbcols;
+ else if (*nbcols > vals[2] * 10 - vals[2] && *nbcols < vals[2] * 10)
+ k = vals[2] * 10 - vals[2];
+ else if (*nbcols != vals[2] * 10)
+ k = vals[2];
+ if (*colors)
+ free(*colors);
+ if (!(*colors = (int*)malloc(sizeof(int) * (*nbcols + k))))
+ return (0);
+ int	val1;
+ int val2;
+ double	perc;
+ perc = ft_dmap(vals[0] % vals[2], vals[2], 0, 100);
+ while (i < *nbcols)
+ {
+ val1 = ((vals[0] + i) - (vals[0] + i) % vals[2]) % (vals[2] * 10);
+ val2 = (val1 + vals[2]) % (vals[2] * 10);
+ perc = (perc + ft_dmap(1, vals[2], 0, 100));
+//		perc = ft_map(i % mlx->colpre, mlx->colpre, 0, 100);
+(*colors)[i] = get_color(val1, val2, vals[2], perc);
+printf("%X\n", (*colors)[i]);
+//		mlx->colors[i] = get_color((mlx->colstart + 5 * (i / 50)) %
+//				(mlx->colpre * 10), (mlx->colstart + 50 * ((i % 50 + 1)))
+//				% (mlx->colpre * 10), mlx->colpre, (i % mlx->colpre));
+perc -= (perc >= 100) ? 100 : 0;
+i++;
+}
+ *nbcols += k;
+ j = 0;
+ val1 = get_color(vals[0] - (vals[0] % vals[2]),
+ (vals[0] + vals[2]) % (vals[2] * 10),
+ vals[2], ft_lmap(vals[0] % vals[2], vals[2], 0, 100));
+ while (j < k)
+ {
+ perc = ft_dmap(j, k, 0, 100);
+ (*colors)[i + j] = ft_gradation((*colors)[i - 1], val1, perc);
+ printf("%X|%X\n", val1, (*colors)[i + j]);
+ j++;
+ }
+ return (*colors);
+ }
+ */
 
+int		menu_action(int x, int y, t_mlx *mlx, int button)
+{
+	if (y >= 60)
+	{
+		if (button == 1)
+			mlx->colstart = ft_lmap(y - 60, 940, 0, 100);
+		if (button == 2)
+			mlx->colend = ft_lmap(y - 60, 940, 0, 100);
+		if (mlx->colstart == mlx->colend)
+			mlx->colend = (mlx->colstart + 1) % 100;
+		set_colors_p1(mlx);
+	}
+	if (x >= 0 && x < 30 && y >= 0 && y < 30)
+	{
+		if (mlx->mval == 1)
+			if (mlx->colpre < 100)
+				mlx->colpre++;
+		if (mlx->mval == 0)
+			if (mlx->maxiter < 1000)
+				mlx->maxiter++;
+	}
+	else if (x >= 0 && x < 30 && y >= 30 && y < 60)
+	{
+		if (mlx->mval == 1)
+			if (mlx->colpre > 1)
+				mlx->colpre--;
+		if (mlx->mval == 0)
+			if (mlx->maxiter > 10)
+				mlx->maxiter--;
+	}
+	else if (x >= 30 && y >= 0 && y < 30)
+		mlx->mval = 0;
+	else if (x >= 30 && y >= 30 && y < 60)
+		mlx->mval = 1;
+	if (mlx->mval == 1)
+		set_colors_p1(mlx);
+	printf("%d\n", mlx->mval);
+	return (0);
+}
 
 int			mouse_pressed(int button, int x, int y, void *param)
 {
@@ -243,7 +325,13 @@ int			mouse_pressed(int button, int x, int y, void *param)
 		mlx->ymin = ft_dmap(y, 1000, mlx->ymin, mlx->ymax) - (2.5 / (2 * mlx->ratio));
 		mlx->ymax = mlx->ymin + ((double)2.5 / (double)mlx->ratio);
 	}
-	return (0);
+	/*	else if (button == 1 && x < 0 && y > 49)
+		{
+		if (y < 49)
+		y = 49;
+		mlx->colset = y;
+		}
+		*/	return (0);
 }
 
 void	ft_move_cursor(t_mlx *mlx, double x, double y)
@@ -252,21 +340,6 @@ void	ft_move_cursor(t_mlx *mlx, double x, double y)
 	mlx->xmax += (x / (2 * mlx->ratio));
 	mlx->ymin += (y / (2 * mlx->ratio));
 	mlx->ymax += (y / (2 * mlx->ratio));
-}
-
-int		mouse_hover(int x, int y, void *param)
-{
-	t_mlx *mlx;
-
-	mlx = (t_mlx*)param;
-	y = 0;
-	x -= 200;
-	if (x <= 0 || x >= mlx->width || y < 0 || y >= 1000)
-		return (0);
-	printf("%d|", mlx->maxiter);
-	mlx->maxiter = ft_lmap(x, 1000, 0, 100);
-	printf("%d\n", mlx->maxiter);
-	return (1);
 }
 
 int		key_pressed(int key, void *ptr)
@@ -285,7 +358,10 @@ int		key_pressed(int key, void *ptr)
 		}
 	}
 	if (key == 69)
+	{
 		mlx->maxiter += 10;
+		printf("%d\n", mlx->maxiter);
+	}
 	if (key == 78)
 	{
 		if (mlx->maxiter > 10)
@@ -311,10 +387,8 @@ int		ft_loop(void *pass)
 	t_mlx *mlx;
 
 	mlx = (t_mlx*)pass;
-	printf("|%d", mlx->maxiter);
 	mlx->maxiter += mlx->autoiter;
 	mlx->index += 1;
-	printf("|%d|\n", mlx->maxiter);
 	draw_mandelbrot(mlx);
 	draw_menu(mlx);
 	/*	mlx->itratio += 1;
@@ -336,10 +410,12 @@ t_mlx	*ft_setup_mlx_p2(t_mlx *mlx)
 	mlx->img = mlx_new_image(mlx->mlx, mlx->height, mlx->width);
 	mlx->main->data = mlx_get_data_addr(mlx->img, &mlx->main->bpx,
 			&mlx->main->size, &mlx->main->end);
+	draw_menu(mlx);
+	draw_mandelbrot(mlx);
 	mlx_mouse_hook(mlx->win, &mouse_pressed, mlx);
 	mlx_key_hook(mlx->win, &key_pressed, mlx);
 	mlx_loop_hook(mlx->mlx, &ft_loop, (void*)mlx);
-	return (mlx);
+
 }
 
 t_mlx	*ft_setup_mlx(void)
@@ -366,7 +442,6 @@ t_mlx	*ft_setup_mlx(void)
 	mlx->xmax = 0.5;
 	mlx->ymin = -1.25;
 	mlx->ymax = 1.25;
-	mlx_hook(mlx->win, 6, (1L << 6), &mouse_hover, mlx);
 	return (ft_setup_mlx_p2(mlx));
 }
 
@@ -375,5 +450,36 @@ int		main(void)
 	t_mlx	*mlx;
 
 	mlx = ft_setup_mlx();
+	if (!(mlx = (t_mlx*)malloc(sizeof(t_mlx))))
+		return (-1);
+	if (!(mlx->main = (t_img*)malloc(sizeof(t_img))))
+		return (-1);
+	mlx->mlx = mlx_init();
+	mlx->main->colors = NULL;
+	mlx->colstart = 0;
+	mlx->index = 0;
+	mlx->colend = 100;
+	mlx->colpre = 20;
+	mlx->menu = NULL;
+	mlx->main->nbcols = 0;
+	mlx->moffset = 200;
+	set_colors_p1(mlx);
+	mlx->win = mlx_new_window(mlx->mlx, 1000 + mlx->moffset, 1000, "Fract'ol");
+	mlx->img = NULL;
+	mlx->xmin = -2;
+	mlx->xmax = 0.5;
+	mlx->ymin = -1.25;
+	mlx->ymax = 1.25;
+	mlx->ratio = 1;
+	mlx->height = 1000;
+	mlx->width = 1000;
+	mlx->maxiter = 1;
+	mlx->autoiter = 0;
+	mlx->img = mlx_new_image(mlx->mlx, mlx->height, mlx->width);
+	mlx->main->data = mlx_get_data_addr(mlx->img, &mlx->main->bpx,
+			&mlx->main->size, &mlx->main->end);
+	mlx_mouse_hook(mlx->win, &mouse_pressed, mlx);
+	mlx_key_hook(mlx->win, &key_pressed, mlx);
+	mlx_loop_hook(mlx->mlx, &ft_loop, (void*)mlx);
 	mlx_loop(mlx->mlx);
 }
