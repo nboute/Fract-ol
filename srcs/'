@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/03/28 17:48:29 by nboute            #+#    #+#             */
-/*   Updated: 2017/06/03 18:55:37 by nboute           ###   ########.fr       */
+/*   Updated: 2017/05/31 20:10:53 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,6 @@
 void		ft_place_pixel(int color, int x, int y, t_img *img)
 {
 	*(unsigned*)(img->data + x * img->bpx / 8 + y * img->size) = color;
-}
-
-void		ft_reset(t_mlx *mlx)
-{
-	if (!mlx->fractal || mlx->fractal == 1)
-	{
-		mlx->xmin = -2;
-		mlx->xmax = 0.5;
-		mlx->ymin = -1.25;
-		mlx->ymax = 1.25;
-	}
-	else if (mlx->fractal == 2)
-	{
-		mlx->xmin = -0.7;
-		mlx->ymin = 0.27015;
-	}
-	mlx->zoom = 1;
 }
 
 int			set_color(int cp)
@@ -98,48 +81,13 @@ int			get_color(int val, int val2, int pre, int perc)
 				set_color(val2 / pre), perc));
 }
 
-/*
-** vals
-** 0 const real
-** 1 const ima
-** else valeurs tmp
-** pairs = nb reel, impair = imaginaire
-*/
-
-void		julia(int x, int y, t_mlx *mlx)
+void		julia(int i, int j, t_mlx *mlx)
 {
-	double	vals[6];
-	int		i;
+	double creal, cima;
+	double	nreal, nima, oreal, oima;
+	int		iter;
 
-	vals[0] = mlx->xmin;
-	vals[1] = mlx->ymin;
-
-	y = 0;
-	while (y < mlx->height)
-	{
-		x = 0;
-		while (x < mlx->width)
-		{
-			vals[4] = 1.5 * (x - mlx->width / 2) / (0.5 * mlx->width * mlx->zoom) + mlx->pady;
-			vals[5] = (y - mlx->height / 2) / (0.5 * mlx->height * mlx->zoom) + mlx->padx;
-			i = 0;
-			while (i < mlx->maxiter)
-			{
-				vals[2] = vals[4];
-				vals[3] = vals[5];
-				vals[4] = vals[2] * vals[2] - vals[3] * vals[3] + vals[0];
-				vals[5] = 2 * vals[2] * vals[3] + vals[1];
-				if ((vals[4] * vals[4] + vals[5] * vals[5]) > 4)
-					break;
-				i++;
-			}
-			ft_place_pixel(mlx->main->colors[(i + mlx->index) % mlx->main->nbcols],
-			x, y, mlx->main);
-			x++;
-		}
-		y++;
-	}
-	mlx_put_image_to_window(mlx->mlx, mlx->win, mlx->img, mlx->moffset, 0);
+	while (
 }
 
 void		mandelbrot(int i, int j, t_mlx *mlx)
@@ -187,20 +135,20 @@ void		burning_ship(int i, int j, t_mlx *mlx)
 	ft_place_pixel(mlx->main->colors[(iter + mlx->index) % mlx->main->nbcols],
 			i, j, mlx->main);
 }
-int			draw_fractal(t_mlx *mlx)
+int			draw_mandelbrot(t_mlx *mlx)
 {
-	int		x;
-	int		y;
+	int		i;
+	int		j;
 
-	y = 0;
-	while (y < mlx->height)
+	i = 0;
+	while (i < mlx->width)
 	{
-		x = 0;
-		while (x < mlx->width)
-//			julia(i, j++. mlx);
+		j = 0;
+		while (j < mlx->height)
+			julia(i, j++. mlx);
 //						burning_ship(i, j++, mlx);
-			mandelbrot(y, x++, mlx);
-		y++;
+			//mandelbrot(i, j++, mlx);
+		i++;
 	}
 	mlx_put_image_to_window(mlx->mlx, mlx->win, mlx->img, mlx->moffset, 0);
 	return (0);
@@ -288,39 +236,31 @@ int			mouse_pressed(int button, int x, int y, void *param)
 		menu_action(x, y, mlx, button);
 	}
 	x -= mlx->moffset;
-	if (x > 0 && ((button == 4 && mlx->zoom < ft_power(2, 22)) ||
-				(button == 5 && mlx->zoom > 1)))
+	if (x > 0 && button == 4 && mlx->ratio < ft_power(2, 22))
 	{
-		if (button == 4)
-			mlx->zoom *= 2;
-		else
-			mlx->zoom /= 2;
-		if (mlx->fractal != 2)
-		{
-			mlx->xmin = ft_dmap(x, 1000, mlx->xmin, mlx->xmax) - (2.5 / (2 * mlx->zoom));
-			mlx->xmax = mlx->xmin + ((double)2.5 / (double)mlx->zoom);
-			mlx->ymin = ft_dmap(y, 1000, mlx->ymin, mlx->ymax) - (2.5 / (2 * mlx->zoom));
-			mlx->ymax = mlx->ymin + ((double)2.5 / (double)mlx->zoom);
-		}
-		else
-		{
-			mlx->padx = x + (4 * 
-		}
+		mlx->ratio *= 2;
+		mlx->xmin = ft_dmap(x, 1000, mlx->xmin, mlx->xmax) - (2.5 / (2 * mlx->ratio));
+		mlx->xmax = mlx->xmin + ((double)2.5 / (double)mlx->ratio);
+		mlx->ymin = ft_dmap(y, 1000, mlx->ymin, mlx->ymax) - (2.5 / (2 * mlx->ratio));
+		mlx->ymax = mlx->ymin + ((double)2.5 / (double)mlx->ratio);
+	}
+	if (x > 0 && button == 5 && mlx->ratio > 1)
+	{
+		mlx->ratio /= 2;
+		mlx->xmin = ft_dmap(x, 1000, mlx->xmin, mlx->xmax) - (2.5 / (2 * mlx->ratio));
+		mlx->xmax = mlx->xmin + ((double)2.5 / (double)mlx->ratio);
+		mlx->ymin = ft_dmap(y, 1000, mlx->ymin, mlx->ymax) - (2.5 / (2 * mlx->ratio));
+		mlx->ymax = mlx->ymin + ((double)2.5 / (double)mlx->ratio);
 	}
 	return (0);
 }
 
 void	ft_move_cursor(t_mlx *mlx, double x, double y)
 {
-	x = 0;
-	y = 0;
-/*	mlx->xmin += (x / (2 * mlx->zoom));
-	mlx->xmax += (x / (2 * mlx->zoom));
-	mlx->ymin += (y / (2 * mlx->zoom));
-	mlx->ymax += (y / (2 * mlx->zoom));
-	*/
-	mlx->padx += x / (4 * mlx->zoom);
-	mlx->pady += y / (4 * mlx->zoom);
+	mlx->xmin += (x / (2 * mlx->ratio));
+	mlx->xmax += (x / (2 * mlx->ratio));
+	mlx->ymin += (y / (2 * mlx->ratio));
+	mlx->ymax += (y / (2 * mlx->ratio));
 }
 
 int		mouse_hover(int x, int y, void *param)
@@ -328,13 +268,11 @@ int		mouse_hover(int x, int y, void *param)
 	t_mlx *mlx;
 
 	mlx = (t_mlx*)param;
+	y = 0;
 	x -= 200;
-	if (x <= 0 || x >= mlx->width || y < 0 || y >= 1000 || !mlx->vary)
+	if (x <= 0 || x >= mlx->width || y < 0 || y >= 1000)
 		return (0);
-//	mlx->maxiter = ft_lmap(x, 1000, 0, 100);
-	mlx->xmin = ft_dmap(x, 1000, 0, -1);
-	mlx->ymin = ft_dmap(y, 1000, 0, 1);
-	printf("%lf|%lf\n", mlx->xmin, mlx->ymin);
+	mlx->maxiter = ft_lmap(x, 1000, 0, 100);
 	return (1);
 }
 
@@ -342,14 +280,11 @@ int		key_pressed(int key, void *ptr)
 {
 	t_mlx *mlx;
 
-	printf("%d\n", key);
 	mlx = (t_mlx*)ptr;
-	if (key >= 82 && key <= 92 && key != 90)
+	if (key >= 82 && key <= 92)
 	{
-		if (key > 90)
-			key--;
 		if (mlx->mval == 0)
-			mlx->maxiter = (mlx->maxiter * 10 + key - 82) % 1000;
+			mlx->maxiter = (mlx->maxiter * 10 + key - 82) % 100;
 		if (mlx->mval == 1)
 		{
 			mlx->colpre = (mlx->colpre * 10 + key - 82) % 100;
@@ -373,10 +308,6 @@ int		key_pressed(int key, void *ptr)
 		ft_move_cursor(mlx, -1, 0);
 	else if (key == 49)
 		mlx->autoiter = (mlx->autoiter + 1) % 2;
-	else if (key == 15)
-		ft_reset(mlx);
-	else if (key == 35)
-		mlx->vary = mlx->vary == 1 ? 0 : 1;
 	else
 		return (0);
 	return (1);
@@ -388,9 +319,8 @@ int		ft_loop(void *pass)
 
 	mlx = (t_mlx*)pass;
 	mlx->maxiter += mlx->autoiter;
-	mlx->index += 1;
-//	draw_fractal(mlx);
-	julia(0, 0, mlx);
+//	mlx->index += 1;
+	draw_mandelbrot(mlx);
 	draw_menu(mlx);
 	/*	mlx->itratio += 1;
 		if (!(mlx->itratio % 100))
@@ -403,7 +333,7 @@ int		ft_loop(void *pass)
 
 t_mlx	*ft_setup_mlx_p2(t_mlx *mlx)
 {
-	mlx->zoom = 1;
+	mlx->ratio = 1;
 	mlx->height = 1000;
 	mlx->width = 1000;
 	mlx->maxiter = 1;
@@ -431,10 +361,6 @@ t_mlx	*ft_setup_mlx(void)
 	mlx->index = 0;
 	mlx->colend = 100;
 	mlx->colpre = 20;
-	mlx->fractal = 2;
-	mlx->padx = 0;
-	mlx->vary = 1;
-	mlx->pady = 0;
 	mlx->menu = NULL;
 	mlx->main->nbcols = 0;
 	mlx->moffset = 200;
@@ -445,7 +371,7 @@ t_mlx	*ft_setup_mlx(void)
 	mlx->xmax = 0.5;
 	mlx->ymin = -1.25;
 	mlx->ymax = 1.25;
-	mlx_hook(mlx->win, 6, (1L << 6), &mouse_hover, mlx);
+//	mlx_hook(mlx->win, 6, (1L << 6), &mouse_hover, mlx);
 	return (ft_setup_mlx_p2(mlx));
 }
 

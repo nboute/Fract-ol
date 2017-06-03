@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/04/22 17:22:30 by nboute            #+#    #+#             */
-/*   Updated: 2017/05/28 21:04:19 by nboute           ###   ########.fr       */
+/*   Updated: 2017/06/03 15:41:18 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,6 @@ int		menu_action(int x, int y, t_mlx *mlx, int button)
 		mlx->mval = 1;
 	if (mlx->mval == 1)
 		set_colors_p1(mlx);
-	printf("%d\n", mlx->mval);
 	return (0);
 }
 
@@ -126,14 +125,12 @@ void	draw_menu(t_mlx *mlx)
 				ft_place_pixel(CYAN, j, i, mlx->menu);
 			else
 				ft_place_pixel(BLACK, j, i, mlx->menu);
-			if (mlx->mval == 0 && (((i == 0 || i == 29) && j > 30) || ((j == 30 || j == mlx->moffset - 1) && i < 30)))
-			{
+			if (mlx->mval == 0 && (((i == 0 || i == 29) && j > 30) ||
+						((j == 30 || j == mlx->moffset - 1) && i < 30)))
 				ft_place_pixel(RED, j, i, mlx->menu);
-			}
-			else if  (mlx->mval == 1 && (((i == 30 || i == 59) && j > 30) || ((j == 30 || j == mlx->moffset - 1) && i >= 30)))
-			{
+			else if  (mlx->mval == 1 && (((i == 30 || i == 59) && j > 30) ||
+						((j == 30 || j == mlx->moffset - 1) && i >= 30)))
 				ft_place_pixel(RED, j, i, mlx->menu);
-			}
 			j++;
 		}
 		i++;
@@ -141,7 +138,6 @@ void	draw_menu(t_mlx *mlx)
 	mlx_put_image_to_window(mlx->mlx, mlx->win, mlx->menu->img, 0, 0);
 	if (mlx->mval == 0)
 	{
-		ft_putchar('a');
 		mlx_string_put(mlx->mlx, mlx->win, 75, 5, 0x00FFFFFF, "ITER MAX");
 		mlx_string_put(mlx->mlx, mlx->win, 110 - (ft_nbdigits(mlx->maxiter) * 5)
 				/ 2, 35, WHITE, ft_itoa(mlx->maxiter));

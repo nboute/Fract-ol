@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/04 19:05:42 by nboute            #+#    #+#             */
-/*   Updated: 2017/05/28 20:42:40 by nboute           ###   ########.fr       */
+/*   Updated: 2017/06/03 18:47:14 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,15 @@ typedef struct			s_img
 	int					nbcols;
 }						t_img;
 
+/*
+**
+** 1 mandelbrot
+** 2 julia
+** 3 burning_ship
+** 4
+**
+*/
+
 typedef struct			s_mlx
 {
 	void				*win;
@@ -63,12 +72,13 @@ typedef struct			s_mlx
 	t_img				*menu;
 	void				*img;
 
-	float				zoom;
 	float				xmin;
 	float				xmax;
 	float				ymin;
 	float				ymax;
-	long				ratio;
+	double				padx;
+	double				pady;
+	long				zoom;
 	short				itratio;
 	int					maxiter;
 	short				autoiter;
@@ -79,14 +89,24 @@ typedef struct			s_mlx
 	int					index;
 	int					moffset;
 	int					mval;
+	int					fractal;
 	int					palstart;
 	int					palend;
+	int					vary;
 
 	int					width;
 	int					height;
 	int					gwid;
 	int					ghei;
 }						t_mlx;
+
+typedef struct			s_fractal
+{
+	char				*name;
+	int					id;
+	void				(*fct)(int x, int y, t_mlx *mlx);
+}						t_fractal;
+
 
 void	draw_menu(t_mlx *mlx);
 int		*set_color_values(int vals[3], int *nbcols, int **colors);
