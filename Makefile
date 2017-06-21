@@ -6,7 +6,7 @@
 #    By: nboute <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2017/01/04 20:02:22 by nboute            #+#    #+#              #
-#    Updated: 2017/04/24 18:03:38 by nboute           ###   ########.fr        #
+#    Updated: 2017/06/21 18:16:10 by nboute           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,8 @@ MLX = -L ./minilibx_macos -lmlx -framework OpenGL -framework AppKit
 
 LIBMLX = minilibx_macos/mlx.a
 
+PTHREAD = -lpthread -D_REENTRANT
+
 CFLAGS = -c -Wall -Wextra -Werror
 
 OPTI = -O3 -march=native
@@ -32,8 +34,14 @@ CC = gcc
 
 C_DIR = srcs/
 
-SRCS = fractol.c \
-	   menu.c
+SRCS = ft_actions.c \
+	   menu.c \
+	   ft_colors.c \
+	   ft_fractals.c \
+	   ft_keys.c \
+	   ft_setcolors.c \
+	   ft_setup.c \
+	   ft_draw.c
 
 SRC = $(addprefix $(C_DIR), $(SRCS))
 
@@ -45,7 +53,7 @@ INC = -I includes -I libft/
 all : $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(OPTI) $(WFLAGS) $(MLX) $^ -o $@ $(LIB)
+	$(CC) $(OPTI) $(WFLAGS) $(MLX) $^ -o $@ $(LIB) $(PTHREAD)
 
 $(LIBFT):
 	make -C libft/

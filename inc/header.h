@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/04 19:05:42 by nboute            #+#    #+#             */
-/*   Updated: 2017/06/03 18:47:14 by nboute           ###   ########.fr       */
+/*   Updated: 2017/06/21 18:34:24 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 # define INT_MAX 2147483647
 # define INT_MIN -2147483648
 # define MAX_COLS 1000
-# define ABS(value) (value < 0) ? (-1 * value) : value
+# define ABS(value) (value < 0) ? -value : value
 
 # include "../libft/libft.h"
 # include <math.h>
@@ -37,12 +37,7 @@
 # include <stdlib.h>
 # include <fcntl.h>
 # include "../minilibx_macos/mlx.h"
-
-typedef struct			s_readlines
-{
-	char				**tab;
-	struct s_readlines	*next;
-}						t_readlines;
+# include <pthread.h>
 
 typedef struct			s_img
 {
@@ -56,12 +51,10 @@ typedef struct			s_img
 }						t_img;
 
 /*
-**
 ** 1 mandelbrot
 ** 2 julia
 ** 3 burning_ship
 ** 4
-**
 */
 
 typedef struct			s_mlx
@@ -70,8 +63,9 @@ typedef struct			s_mlx
 	void				*mlx;
 	t_img				*main;
 	t_img				*menu;
-	void				*img;
+	int					pixels[1000][1000];
 
+	int					changed;
 	float				xmin;
 	float				xmax;
 	float				ymin;
@@ -86,6 +80,7 @@ typedef struct			s_mlx
 	int					colend;
 	int					colpre;
 	int					colrange;
+	int					indexi;
 	int					index;
 	int					moffset;
 	int					mval;
@@ -100,18 +95,37 @@ typedef struct			s_mlx
 	int					ghei;
 }						t_mlx;
 
-typedef struct			s_fractal
+typedef struct			s_thread
 {
-	char				*name;
-	int					id;
-	void				(*fct)(int x, int y, t_mlx *mlx);
-}						t_fractal;
+	struct s_mlx		*mlx;
+	int					part;
+	pthread_t			thread;
+}						t_thread;
 
-
-void	draw_menu(t_mlx *mlx);
-int		*set_color_values(int vals[3], int *nbcols, int **colors);
-int		set_colors_p1(t_mlx *mlx);
-void	ft_place_pixel(int color, int x, int y, t_img *img);
-int		menu_action(int x, int y, t_mlx *mlx, int button);
+void					draw_menu(t_mlx *mlx);
+void					menu_action(int x, int y, t_mlx *mlx, int button);
+int						mouse_pressed(int button, int x, int y, void *param);
+void					ft_move_cursor(t_mlx *mlx, double x, double y);
+int						mouse_hover(int x, int y, void *param);
+int						set_color(int cp);
+int						ft_gradation(unsigned int col, unsigned int col2,
+		int p);
+int						get_color_grad(int val, int val2, int pre, int perc);
+int						set_colors_p1(t_mlx *mlx);
+int						*set_color_values(int vals[4], int *nbcols,
+		int **colors);
+void					ft_place_pixel(int color, int x, int y, t_img *img);
+int						ft_loop(void *pass);
+void					*draw_fractal(void *thread);
+void					ft_reset(t_mlx *mlx);
+int						key_pressed(int key, void *ptr);
+void					julia(int x, int y, t_mlx *mlx);
+void					mandelbrot(int x, int y, t_mlx *mlx);
+void					burning_ship(int x, int y, t_mlx *mlx);
+void					ft_set_fractal(t_mlx *mlx, char *fractal);
+void					get_palet(int **colors, int *nbcols);
+void					setup_menu(t_mlx *mlx);
+void					draw_palet(t_img *menu, int offset, int colstart,
+		int colend);
 
 #endif
