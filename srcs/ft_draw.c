@@ -6,7 +6,7 @@
 /*   By: nboute <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/19 16:06:36 by nboute            #+#    #+#             */
-/*   Updated: 2017/06/21 18:31:01 by nboute           ###   ########.fr       */
+/*   Updated: 2017/07/13 16:17:37 by nboute           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,19 @@ void			ft_reset(t_mlx *mlx)
 	mlx->changed = 1;
 }
 
+void			*draw_recurs_fractal(t_mlx *mlx, double posX, double posY, double dirX, double dirY, double size, int n)
+{
+	int	x[4];
+	int	y[4];
+	double pi = 3.1415926535897932384626433832795;
+	double angle = 0.2 * pi;
+
+	x[0] = (int)posX;
+	y[0] = (int)posY;
+	x[1] = (int)(posX + size * dirX);
+	y[1] = (int)(posY + size * dirY);
+}
+
 void			*draw_fractal(void *thread)
 {
 	int			x;
@@ -80,6 +93,8 @@ void			ft_threads(t_mlx *mlx)
 	int			i;
 	int			ret;
 
+	if (mlx->fractal <= 2)
+	{
 	i = 0;
 	ret = 0;
 	while (i < 8 && !ret)
@@ -95,6 +110,9 @@ void			ft_threads(t_mlx *mlx)
 	i = 0;
 	while (i < 8)
 		pthread_join(data[i++].thread, NULL);
+	}
+	else
+		draw_recurs_fractal(mlx, (double)mlx->width / 2, (double)mlx->height - 1, 0, -1, (double)mlx->height, 0);
 	mlx_put_image_to_window(mlx->mlx, mlx->win, mlx->main->img, mlx->moffset,
 			0);
 }
